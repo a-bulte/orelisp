@@ -1,4 +1,7 @@
 (ns orelisp.frames.frames
+  (:require
+   [malli.core :as m]
+   [orelisp.spec-utils :as spec-utils])
   (:import
    [org.orekit.data DataContext]))
 
@@ -10,9 +13,12 @@
    :gcrf #(.getGCRF lazy-frames)
    :teme #(.getTEME lazy-frames)})
 
+(def FrameSpec
+  (m/schema
+   (into [:enum] (keys frames))))
+
 (defn get-frame
   "Takes a keyword corresponding to a reference frame and returns the corresponding Orekit object"
   [frame]
+  (spec-utils/spec-throw frame FrameSpec "Frame is not conform to spec")
   ((get frames frame)))
-
-(spec-utils/spec-try (get-frame :eme200))
