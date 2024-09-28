@@ -1,26 +1,12 @@
 (ns orelisp.time.absolute-date
   (:require
    [clojure.set :refer [map-invert]]
+   [orelisp.spec-utils :as spec-utils]
+   [orelisp.time.epochs :as epochs]
+   [orelisp.time.specs :as time-specs]
    [orelisp.time.timescales :as timescales])
   (:import
    [org.orekit.time AbsoluteDate]))
-
-(def ^:private epochs
-  {:arbitrary AbsoluteDate/ARBITRARY_EPOCH
-   :beidou AbsoluteDate/BEIDOU_EPOCH
-   :ccsds AbsoluteDate/CCSDS_EPOCH
-   :fifties AbsoluteDate/FIFTIES_EPOCH
-   :future-infinity AbsoluteDate/FUTURE_INFINITY
-   :galileo AbsoluteDate/GALILEO_EPOCH
-   :glonass AbsoluteDate/GLONASS_EPOCH
-   :gps AbsoluteDate/GPS_EPOCH
-   :irnss AbsoluteDate/IRNSS_EPOCH
-   :j2000 AbsoluteDate/J2000_EPOCH
-   :java AbsoluteDate/JAVA_EPOCH
-   :julian AbsoluteDate/JULIAN_EPOCH
-   :modified-julian AbsoluteDate/MODIFIED_JULIAN_EPOCH
-   :past-infinity AbsoluteDate/PAST_INFINITY
-   :qzss AbsoluteDate/QZSS_EPOCH})
 
 (def ^:private month-int-map
   {:january   1
@@ -39,6 +25,7 @@
 (defn- month->int
   "Converts a month keyword to the corresponding integer"
   [month]
+  (spec-utils/spec-throw month time-specs/Month "Month is not conform to spec")
   (cond
     (keyword? month) (get month-int-map month)
     (int? month) month
@@ -48,6 +35,7 @@
 
 (defmethod ->absolute-date clojure.lang.PersistentArrayMap
   [date]
+  (spec-utils/spec-throw date time-specs/DateSpec "Date is not conform to spec")
   (let [{:keys [year month day hour minute second timescale]
          :or {hour 0
               minute 0
@@ -57,7 +45,7 @@
 
 (defmethod ->absolute-date clojure.lang.Keyword
   [epoch]
-  (get epochs epoch))
+  (get epochs/epochs epoch))
 
 (defn absolute-date->map
   [orekit-date timescale]
@@ -75,6 +63,7 @@
 
 (defn shift
   [date dt]
+  (spec-utils/spec-throw date time-specs/DateSpec "Date is not conform to spec")
   (let [orekit-date (->absolute-date date)
         orekit-shifted-date (.shiftedBy orekit-date (double dt))
         timescale (or (:timescale date) :utc)]
