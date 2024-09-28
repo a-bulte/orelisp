@@ -1,5 +1,6 @@
 (ns orelisp.time.absolute-date
   (:require
+   [clojure.set :refer [map-invert]]
    [orelisp.time.timescales :as timescales])
   (:import
    [org.orekit.time AbsoluteDate]))
@@ -57,3 +58,24 @@
 (defmethod ->absolute-date clojure.lang.Keyword
   [epoch]
   (get epochs epoch))
+
+(defn absolute-date->map
+  [orekit-date timescale]
+  (let [orekit-timescale (timescales/get-timescale timescale)
+        datetime-components (.getComponents orekit-date orekit-timescale)
+        date (.getDate datetime-components)
+        time (.getTime datetime-components)]
+    {:year (.getYear date)
+     :month (get (map-invert month-int-map) (.getMonth date))
+     :day (.getDay date)
+     :hour (.getHour time)
+     :minute (.getMinute time)
+     :second (.getSecond time)
+     :timescale timescale}))
+
+(defn shift
+  [date dt]
+  (let [orekit-date (->absolute-date date)
+        orekit-shifted-date (.shiftedBy orekit-date (double dt))
+        timescale (or (:timescale date) :utc)]
+    (absolute-date->map orekit-shifted-date timescale)))
