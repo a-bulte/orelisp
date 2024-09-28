@@ -1,4 +1,7 @@
 (ns orelisp.time.timescales
+  (:require
+   [malli.core :as m]
+   [orelisp.spec-utils :as spec-utils])
   (:import
    [org.orekit.data DataContext]))
 
@@ -18,6 +21,11 @@
    :tcg #(.getTCG lazy-timescales)
    :tdb #(.getTDB lazy-timescales)})
 
+(def TimescaleSpec
+  (m/schema
+   (into [:enum] (keys timescales))))
+
 (defn get-timescale
   [timescale]
+  (spec-utils/spec-throw timescale TimescaleSpec "Timescale does not conform to spec")
   ((get timescales timescale)))
