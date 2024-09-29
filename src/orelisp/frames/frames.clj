@@ -13,9 +13,13 @@
    :gcrf #(.getGCRF lazy-frames)
    :teme #(.getTEME lazy-frames)})
 
+;; Spec
+
 (def FrameSpec
   (m/schema
    (into [:enum] (keys frames))))
+
+;; End spec
 
 (defn get-frame
   "Takes a keyword corresponding to a reference frame and returns the corresponding Orekit object"

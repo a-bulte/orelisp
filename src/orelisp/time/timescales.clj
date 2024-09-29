@@ -21,9 +21,13 @@
    :tcg #(.getTCG lazy-timescales)
    :tdb #(.getTDB lazy-timescales)})
 
+;; Spec
+
 (def TimescaleSpec
   (m/schema
    (into [:enum] (keys timescales))))
+
+;; End spec
 
 (defn get-timescale
   [timescale]

@@ -4,7 +4,6 @@
    [orelisp.frames.frames :as frames]
    [orelisp.spec-utils :as spec-utils]
    [orelisp.time.absolute-date :as dates]
-   [orelisp.time.specs :as time-spec])
   (:import
    [org.orekit.orbits KeplerianOrbit PositionAngleType]))
 
@@ -54,7 +53,7 @@
    [:map
     [:orbit/type [:enum orbit-type]]
     [:frame frames/FrameSpec]
-    [:date time-spec/DateSpec]
+    [:date dates/DateSpec]
     [:body [:map [:mu [:and [:double] [:>= 0]]]]]
     [:orbit/parameters (get orbit-type-spec-map orbit-type)]]))
 
