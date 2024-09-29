@@ -4,7 +4,8 @@
    [orelisp.frames.frames :as frames]
    [orelisp.spec-utils :as spec-utils]
    [orelisp.time.absolute-date :as dates]
-   [orelisp.utils.pvcoordinates :as pvcoordinates])
+   [orelisp.utils.pvcoordinates :as pvcoordinates]
+   [orelisp.time.timescales :as timescales])
   (:import
    [org.orekit.orbits CartesianOrbit KeplerianOrbit PositionAngleType]))
 
@@ -97,3 +98,30 @@
         {:keys [frame date]} orbit
         orekit-date (dates/->absolute-date date)]
     (CartesianOrbit. pvcoordinates (frames/get-frame frame) orekit-date (get-in orbit [:body :mu]))))
+
+(defn orekit-orbit->frame-date
+  [orekit-orbit timescale]
+  {:frame (frames/orekit-frame->keyword (.getFrame orekit-orbit))
+   :date (dates/absolute-date->map (.getDate orekit-orbit) timescale)})
+
+(defmulti orekit-orbit->map "Converts an instance of an Orekit orbit to a map" (fn [orekit-orbit & args] (type orekit-orbit)))
+
+(defmethod orekit-orbit->map org.orekit.orbits.KeplerianOrbit
+  [orekit-orbit timescale position-angle-type]
+  (merge
+   {:orbit/type :keplerian
+    :orbit/parameters {:orbit/semi-major-axis (.getA orekit-orbit)
+                       :orbit/eccentricity (.getE orekit-orbit)
+                       :orbit/inclination (.getI orekit-orbit)
+                       :orbit/perigee-argument (.getPerigeeArgument orekit-orbit)
+                       :orbit/right-ascension-of-the-ascending-node (.getRightAscensionOfAscendingNode orekit-orbit)
+                       :orbit/position-angle (.getAnomaly orekit-orbit (get position-angle-types-map position-angle-type))
+                       :position-angle/type position-angle-type}}
+   (orekit-orbit->frame-date orekit-orbit timescale)))
+
+(defmethod orekit-orbit->map org.orekit.orbits.CartesianOrbit
+  [orekit-orbit timescale]
+  (merge
+   {:orbit/type :cartesian
+    :orbit/parameters (pvcoordinates/orekit-pvcoordinates->map (.getPVCoordinates orekit-orbit))}
+   (orekit-orbit->frame-date orekit-orbit timescale)))

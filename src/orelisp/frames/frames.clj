@@ -1,5 +1,6 @@
 (ns orelisp.frames.frames
   (:require
+   [clojure.string :refer [lower-case]]
    [malli.core :as m]
    [orelisp.spec-utils :as spec-utils])
   (:import
@@ -26,3 +27,7 @@
   [frame]
   (spec-utils/throw-spec frame FrameSpec "Frame is not conform to spec")
   ((get frames frame)))
+
+(defn orekit-frame->keyword
+  [orekit-frame]
+  (keyword (lower-case (.getName orekit-frame))))
