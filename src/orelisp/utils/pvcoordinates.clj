@@ -39,11 +39,9 @@
   (spec-utils/throw-spec coordinates PVCoordinatesSpec "PV Coordinates are not conform to spec")
   (let [position (:position coordinates)
         velocity (or (:velocity coordinates) zero-vec)
-        acceleration (or (:acceleration coordinates) zero-vec)
         position-vector (map->orekit-3d-vector position)
-        velocity-vector (map->orekit-3d-vector velocity)
-        acceleration-vector (map->orekit-3d-vector acceleration)]
-    (PVCoordinates. position-vector velocity-vector acceleration-vector)))
+        velocity-vector (map->orekit-3d-vector velocity)]
+    (PVCoordinates. position-vector velocity-vector)))
 
 (defn orekit-3d-vector->map
   [orekit-3d-vector]
@@ -54,11 +52,9 @@
 (defn orekit-pvcoordinates->map
   [orekit-pvcoordinates]
   (let [position (.getPosition orekit-pvcoordinates)
-        velocity (.getVelocity orekit-pvcoordinates)
-        acceleration (.getAcceleration orekit-pvcoordinates)]
+        velocity (.getVelocity orekit-pvcoordinates)]
     {:position (orekit-3d-vector->map position)
-     :velocity (orekit-3d-vector->map velocity)
-     :acceleration (orekit-3d-vector->map acceleration)}))
+     :velocity (orekit-3d-vector->map velocity)}))
 
 (-> {:position {:x 1 :y 2 :z 3}}
     map->orekit-pvcoordinates
