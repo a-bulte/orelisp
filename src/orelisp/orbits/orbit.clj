@@ -4,8 +4,9 @@
    [orelisp.frames.frames :as frames]
    [orelisp.spec-utils :as spec-utils]
    [orelisp.time.absolute-date :as dates]
+   [orelisp.utils.pvcoordinates :as pvcoordinates])
   (:import
-   [org.orekit.orbits KeplerianOrbit PositionAngleType]))
+   [org.orekit.orbits CartesianOrbit KeplerianOrbit PositionAngleType]))
 
 (def orbital-elements-names
   {:orbit/semi-major-axis #{:a :sma :semi-major-axis}
@@ -44,8 +45,12 @@
     [:orbit/position-angle [:double]]
     [:position-angle/type (into [:enum] (keys position-angle-types-map))]]))
 
+(def CartesianOrbitalParametersSpec
+  pvcoordinates/PVCoordinatesSpec)
+
 (def ^:private orbit-type-spec-map
-  {:keplerian KeplerianOrbitalParametersSpec})
+  {:keplerian KeplerianOrbitalParametersSpec
+   :cartesian CartesianOrbitalParametersSpec})
 
 (defn- OrbitSpec
   [orbit-type]
@@ -74,7 +79,6 @@
           orekit-position-angle-type (get position-angle-types-map (get-in translated-orbit [:orbit/parameters :position-angle/type]))
           {:keys [frame date]} translated-orbit
           orekit-date (dates/->absolute-date date)]
-
       (KeplerianOrbit. semi-major-axis
                        eccentricity
                        inclination
@@ -85,3 +89,11 @@
                        (frames/get-frame frame)
                        orekit-date
                        (get-in translated-orbit [:body :mu])))))
+
+(defmethod ->orekit-orbit :cartesian
+  [orbit]
+  (spec-utils/throw-spec orbit (OrbitSpec :cartesian) "Orbit is not conform to spec")
+  (let [pvcoordinates (pvcoordinates/map->orekit-pvcoordinates (:orbit/parameters orbit))
+        {:keys [frame date]} orbit
+        orekit-date (dates/->absolute-date date)]
+    (CartesianOrbit. pvcoordinates (frames/get-frame frame) orekit-date (get-in orbit [:body :mu]))))
