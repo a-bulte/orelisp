@@ -27,5 +27,5 @@
 
 (defn get-timescale
   [timescale]
-  (spec-utils/spec-throw timescale TimescaleSpec "Timescale does not conform to spec")
+  (spec-utils/throw-spec timescale TimescaleSpec "Timescale does not conform to spec")
   ((get timescales timescale)))

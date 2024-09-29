@@ -25,7 +25,7 @@
 (defn- month->int
   "Converts a month keyword to the corresponding integer"
   [month]
-  (spec-utils/spec-throw month time-specs/Month "Month is not conform to spec")
+  (spec-utils/throw-spec month time-specs/Month "Month is not conform to spec")
   (cond
     (keyword? month) (get month-int-map month)
     (int? month) month
@@ -35,7 +35,7 @@
 
 (defmethod ->absolute-date clojure.lang.PersistentArrayMap
   [date]
-  (spec-utils/spec-throw date time-specs/DateSpec "Date is not conform to spec")
+  (spec-utils/throw-spec date time-specs/DateSpec "Date is not conform to spec")
   (let [{:keys [year month day hour minute second timescale]
          :or {hour 0
               minute 0
@@ -63,7 +63,7 @@
 
 (defn shift
   [date dt]
-  (spec-utils/spec-throw date time-specs/DateSpec "Date is not conform to spec")
+  (spec-utils/throw-spec date time-specs/DateSpec "Date is not conform to spec")
   (let [orekit-date (->absolute-date date)
         orekit-shifted-date (.shiftedBy orekit-date (double dt))
         timescale (or (:timescale date) :utc)]

@@ -20,5 +20,5 @@
 (defn get-frame
   "Takes a keyword corresponding to a reference frame and returns the corresponding Orekit object"
   [frame]
-  (spec-utils/spec-throw frame FrameSpec "Frame is not conform to spec")
+  (spec-utils/throw-spec frame FrameSpec "Frame is not conform to spec")
   ((get frames frame)))
