@@ -26,6 +26,13 @@
 
 (def zero-vec {:x 0 :y 0 :z 0})
 
+(defn map->orekit-3d-vector
+  "Converts a map to an instance of Hipparchus 3DVector"
+  [vector]
+  (Vector3D. (:x vector)
+             (:y vector)
+             (:z vector)))
+
 (defn map->orekit-pvcoordinates
   "Converts a map to an instance of Orekit PVCoordinates"
   [coordinates]
@@ -33,13 +40,26 @@
   (let [position (:position coordinates)
         velocity (or (:velocity coordinates) zero-vec)
         acceleration (or (:acceleration coordinates) zero-vec)
-        position-vector (Vector3D. (:x position)
-                                   (:y position)
-                                   (:z position))
-        velocity-vector (Vector3D. (:x velocity)
-                                   (:y velocity)
-                                   (:z velocity))
-        acceleration-vector (Vector3D. (:x acceleration)
-                                       (:y acceleration)
-                                       (:z acceleration))]
+        position-vector (map->orekit-3d-vector position)
+        velocity-vector (map->orekit-3d-vector velocity)
+        acceleration-vector (map->orekit-3d-vector acceleration)]
     (PVCoordinates. position-vector velocity-vector acceleration-vector)))
+
+(defn orekit-3d-vector->map
+  [orekit-3d-vector]
+  {:x (.getX orekit-3d-vector)
+   :y (.getY orekit-3d-vector)
+   :z (.getZ orekit-3d-vector)})
+
+(defn orekit-pvcoordinates->map
+  [orekit-pvcoordinates]
+  (let [position (.getPosition orekit-pvcoordinates)
+        velocity (.getVelocity orekit-pvcoordinates)
+        acceleration (.getAcceleration orekit-pvcoordinates)]
+    {:position (orekit-3d-vector->map position)
+     :velocity (orekit-3d-vector->map velocity)
+     :acceleration (orekit-3d-vector->map acceleration)}))
+
+(-> {:position {:x 1 :y 2 :z 3}}
+    map->orekit-pvcoordinates
+    orekit-pvcoordinates->map)
